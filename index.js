@@ -1,3 +1,4 @@
+
 import TelegramBot from 'node-telegram-bot-api';
 import db from './db.js';  
 import dotenv from 'dotenv';
@@ -59,10 +60,8 @@ To get started, tap one of the buttons below ⬇️
 `;
 
   await clearUserState(chatId);
-  bot.sendMessage(chatId, welcomeMessage, startKeyboard).then(() => {
+  bot.sendMessage(chatId, welcomeMessage, startKeyboard);
 });
-
-
 
 //command(s)
 bot.onText(/\/get_messages/, async (msg) => {
@@ -140,13 +139,11 @@ bot.onText(/\/end_messages/, async (msg) => {
   bot.sendMessage(chatId, '✅ Saving messages is complete.');
 });
 
-
 bot.onText(/\/save_messages/, async (msg) => {
   const chatId = msg.chat.id;
   await setUserState(chatId, 'waiting_folder_to_show');
   bot.sendMessage(chatId, '🗂️ Please enter the name of the folder you want to see messages from:');
 });
-
 
 bot.on('message', async (msg) => {
   const chatId = msg.chat.id;
@@ -261,6 +258,7 @@ bot.on('message', async (msg) => {
             }
             
 
+
             await clearUserState(chatId);
           }
         );
@@ -279,13 +277,9 @@ bot.onText(/\/delete_folder/, async (msg) => {
 //query(s)
 bot.on('callback_query', async (query) => {
   const chatId = query.message.chat.id;
-  const state = await getUserState(chatId);
+  const data = query.data;
 
-  if (!state || state.step !== 'confirm_deletion') return;
-
-  const folderId = state.folder_id;
-
-  if (query.data === 'confirm_delete') {
+  if (data === 'confirm_delete') {
     // Delete messages in a folder
     db.query(
       'DELETE FROM messages WHERE folder_id = ?',
@@ -311,94 +305,13 @@ bot.on('callback_query', async (query) => {
         );
       }
     );
-  } else if (query.data === 'cancel_delete') {
+  } else if (data === 'cancel_delete') {
     await clearUserState(chatId);
     bot.sendMessage(chatId, '✅ Folder deletion canceled.');
   }
-  else if (data === 'send_feedback') {
-    await setUserState(chatId, 'waiting_for_feedback');
-    bot.sendMessage(chatId, '📝 لطفاً پیام یا مشکلی که می‌خواهید ارسال کنید را بنویسید:');
-  }
-  
-  
-
-  // Remove keyboard after response
-  bot.editMessageReplyMarkup({ inline_keyboard: [] }, {
-    chat_id: query.message.chat.id,
-    message_id: query.message.message_id
-  });
-});
-
-bot.on('callback_query', async (query) => {
-  const chatId = query.message.chat.id;
-  const data = query.data;
-
-  if (data === 'start_get_messages') {
-    await setUserState(chatId, 'waiting_folder_name');
-    bot.sendMessage(chatId, '📝 Please enter the name of the folder you want to create:');
-  }
-
-  else if (data === 'start_save_messages') {
-    await setUserState(chatId, 'waiting_folder_to_show');
-    bot.sendMessage(chatId, '📁 Please enter the name of the folder you want to see messages from:');
-  }
-
-  else if (data === 'start_delete_folder') {
-    await setUserState(chatId, 'waiting_folder_to_delete');
-    bot.sendMessage(chatId, '🗑️ Please enter the name of the folder you want to delete:');
-  }
-
-  else if (data === 'start_end_messages') {
-    await clearUserState(chatId);
-    bot.sendMessage(chatId, '✅ Message storage has stopped.');
-  }
-
-  // Remove buttons after click (optional)
-  bot.editMessageReplyMarkup({ inline_keyboard: [] }, {
-    chat_id: query.message.chat.id,
-    message_id: query.message.message_id
-  });
-});
-
-bot.on('callback_query', (query) => {
-  const chatID = query.message.chat.id;
-  const data = query.data;
-
-  if (data === '/stikers') {}
 
   bot.answerCallbackQuery(query.id);
 });
-
-bot.on('callback_query', (query) => {
-  const chatID = query.message.chat.id;
-  const data = query.data;
-
-  if (data === '/gifs') {}
-
-  bot.answerCallbackQuery(query.id);
-});
-
-bot.on('callback_query', (query) => {
-  const chatID = query.message.chat.id;
-  const data = query.data;
-
-  if (data === '/vids') {
-      const message = 'Comming Soon... https://mega.nz/folder/iV8lUJQR#1IYa2qew_AyrpOMTAbdfsg .';
-      bot.sendMessage(chatID, message);
-  }
-
-  bot.answerCallbackQuery(query.id);
-});
-
-bot.on('callback_query', (query) => {
-  const chatID = query.message.chat.id;
-  const data = query.data;
-
-  if (data === '/ops_pics') {}
-
-  bot.answerCallbackQuery(query.id);
-});
-
 
 //function(s)
 function setUserState(user_id, step, folder_id = null) {
@@ -421,7 +334,7 @@ function getUserState(user_id) {
       [user_id],
       (err, results) => {
         if (err) reject(err);
-        else resolve(results[0] || null);
+        else resolve(results[0]);
       }
     );
   });
@@ -439,4 +352,3 @@ function clearUserState(user_id) {
     );
   });
 }
-
