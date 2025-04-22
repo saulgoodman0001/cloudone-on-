@@ -1,5 +1,7 @@
 import TelegramBot from 'node-telegram-bot-api';
 import db from './db.js';  
+import dotenv from 'dotenv';
+dotenv.config();
 
 async function testConnection() {
   try {
@@ -12,9 +14,12 @@ async function testConnection() {
 
 testConnection();
 
+const token = process.env.BOT_TOKEN;
+if (!token) {
+  throw new Error("BOT_TOKEN is not defined in environment variables");
+}
 
-
-const bot = new TelegramBot('8050879283:AAGIe4Wc6XfbfaLoXZAkXMIBLGq-H2xiAhI', { polling: true });
+const bot = new TelegramBot(token, { polling: true });
 const userStates = new Map();
 
 //start
