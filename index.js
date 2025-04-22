@@ -14,7 +14,7 @@ testConnection();
 
 
 
-const bot = new TelegramBot('7748968241:AAE0CHa2RQJbOSoPZfTjW5Pw0azZWaGf4K0', { polling: true });
+const bot = new TelegramBot('8050879283:AAGIe4Wc6XfbfaLoXZAkXMIBLGq-H2xiAhI', { polling: true });
 const userStates = new Map();
 
 //start
